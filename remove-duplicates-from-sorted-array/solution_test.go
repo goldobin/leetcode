@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func Test_RemoveDuplicates(t *testing.T) {
+func Test_removeDuplicates(t *testing.T) {
 
 	cases := []struct {
 		nums         []int

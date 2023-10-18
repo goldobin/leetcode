@@ -9,7 +9,7 @@ import (
  * Definition for singly-linked list.
  */
 
-func Test_MergeTwoLists(t *testing.T) {
+func Test_mergeTwoLists(t *testing.T) {
 
 	cases := []struct {
 		list1    *ListNode
