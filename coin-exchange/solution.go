@@ -3,114 +3,157 @@ package coin_exchange
 import (
 	"math"
 	"slices"
-	"strconv"
-	"strings"
 )
 
 func coinChange(coins []int, amount int) int {
-	a := newAlg(coins)
-	return a.run(amount)
-}
-
-type alg struct {
-	coins []int
-}
-
-func newAlg(coins []int) alg {
-	return alg{
-		coins: slices.Clone(coins),
-	}
-}
-
-func (a alg) run(amount int) int {
 	if amount <= 0 {
 		return 0
 	}
 
-	result := a.iterate(
-		make(map[string]int),
-		newCoinCounts(a.coins),
-		amount,
-	)
+	cs := slices.Clone(coins)
+	slices.SortFunc(cs, reverseInt)
 
-	if result == math.MaxInt {
+	r := iterate(cs, 0, amount)
+	if r == math.MaxInt {
 		return -1
 	}
-
-	return result
+	return r
 }
 
-func makeKey(cs []int) string {
-	b := strings.Builder{}
-
-	for _, v := range cs {
-		b.WriteString(strconv.Itoa(v))
-		b.WriteString(",")
+var reverseInt = func(a, b int) int {
+	if a == b {
+		return 0
 	}
 
-	return b.String()
+	if a > b {
+		return -1
+	}
+	return 1
 }
-func (a alg) iterate(m memory, cc coinCounts, rest int) int {
+
+func iterate(coins []int, count int, rest int) int {
+
 	if rest == 0 {
-		return cc.total
+		return count
 	}
 
 	if rest < 0 {
 		return math.MaxInt
 	}
 
-	bestCount := math.MaxInt
-	for i, v := range a.coins {
-		newCC := cc.increment(i, 1)
-		memoryKey := makeKey(newCC.totalPerCoin)
+	if len(coins) == 0 {
+		return math.MaxInt
+	}
 
-		newBestCount := m.memorize(memoryKey, func() int {
-			return a.iterate(m, newCC, rest-v)
-		})
+	head := coins[0]
 
-		if newBestCount >= bestCount {
-			continue
+	if head <= rest {
+		r1 := iterate(coins, count+1, rest-head)
+		r2 := iterate(coins[1:], count, rest)
+
+		if r1 < r2 {
+			return r1
+		} else {
+			return r2
 		}
-
-		bestCount = newBestCount
-	}
-
-	return bestCount
-}
-
-type coinCounts struct {
-	totalPerCoin []int
-	total        int
-}
-
-func newCoinCounts(coins []int) coinCounts {
-	return coinCounts{
-		totalPerCoin: make([]int, len(coins)),
-		total:        0,
-	}
-
-}
-
-func (cc coinCounts) increment(i, v int) coinCounts {
-	newPerCoin := slices.Clone(cc.totalPerCoin)
-	newPerCoin[i] += v
-	newTotal := cc.total + v
-
-	return coinCounts{
-		totalPerCoin: newPerCoin,
-		total:        newTotal,
+	} else {
+		return iterate(coins[1:], count, rest)
 	}
 }
 
-type memory map[string]int
+//bestCount := math.MaxInt
+//for i, v := range a.coins {
+//	newCC := cc.increment(i, 1)
+//	memoryKey := makeKey(newCC.totalPerCoin)
+//
+//	newBestCount := m.memorize(memoryKey, func() int {
+//		return a.iterate(m, newCC, rest-v)
+//	})
+//
+//	if newBestCount >= bestCount {
+//		continue
+//	}
+//
+//	bestCount = newBestCount
+//}
+//
+//return bestCount
 
-func (m memory) memorize(key string, vFn func() int) int {
-	if memorized, ok := m[key]; ok {
-		return memorized
-	}
+//type alg struct {
+//	coins []int
+//}
 
-	v := vFn()
-	m[key] = v
+//func newAlg(coins []int) alg {
+//	cs := slices.Clone(coins)
+//	slices.SortFunc(cs, reverseInt)
+//
+//	return alg{
+//		coins: cs,
+//	}
+//}
 
-	return v
-}
+//func (a alg) run(amount int) int {
+//	if amount <= 0 {
+//		return 0
+//	}
+//
+//	result := a.iterate(
+//		make(map[string]int),
+//		newCoinCounts(a.coins),
+//		amount,
+//	)
+//
+//	if result == math.MaxInt {
+//		return -1
+//	}
+//
+//	return result
+//}
+
+//func makeKey(cs []int) string {
+//	b := strings.Builder{}
+//
+//	for _, v := range cs {
+//		b.WriteString(strconv.Itoa(v))
+//		b.WriteString(",")
+//	}
+//
+//	return b.String()
+//}
+
+//type coinCounts struct {
+//	totalPerCoin []int
+//	total        int
+//}
+//
+//func newCoinCounts(coins []int) coinCounts {
+//	return coinCounts{
+//		totalPerCoin: make([]int, len(coins)),
+//		total:        0,
+//	}
+//
+//}
+//
+//func (cc coinCounts) increment(i, v int) coinCounts {
+//	newPerCoin := slices.Clone(cc.totalPerCoin)
+//	newPerCoin[i] += v
+//	newTotal := cc.total + v
+//
+//	return coinCounts{
+//		totalPerCoin: newPerCoin,
+//		total:        newTotal,
+//	}
+//}
+//
+//type memory map[string]int
+//
+//func (m memory) memorize(key string, vFn func() int) int {
+//	if memorized, ok := m[key]; ok {
+//		return memorized
+//	}
+//
+//	v := vFn()
+//	m[key] = v
+//
+//	return v
+//}
