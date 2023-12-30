@@ -51,6 +51,21 @@ func Test_coinExchange(t *testing.T) {
 			amount:   9864,
 			expected: 24,
 		},
+		{
+			coins:    []int{227, 99, 328, 299, 42, 322},
+			amount:   9847,
+			expected: 31,
+		},
+		{
+			coins:    []int{346, 29, 395, 188, 155, 109},
+			amount:   9401,
+			expected: 26,
+		},
+		{
+			coins:    []int{431, 62, 88, 428},
+			amount:   9084,
+			expected: 26,
+		},
 	}
 
 	for i, c := range cases {
