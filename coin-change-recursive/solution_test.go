@@ -1,4 +1,4 @@
-package coin_exchange
+package coin_change_recursive
 
 import (
 	"fmt"
@@ -65,6 +65,11 @@ func Test_coinExchange(t *testing.T) {
 			coins:    []int{431, 62, 88, 428},
 			amount:   9084,
 			expected: 26,
+		},
+		{
+			coins:    []int{288, 160, 10, 249, 40, 77, 314, 429},
+			amount:   9208,
+			expected: 22,
 		},
 	}
 
