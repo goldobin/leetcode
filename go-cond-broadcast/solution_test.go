@@ -3,7 +3,6 @@ package go_cond_broadcast
 import "testing"
 
 func Test_Solution(t *testing.T) {
-
 	expected := 10
 	result := solution(10)
 

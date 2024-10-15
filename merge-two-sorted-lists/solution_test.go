@@ -10,7 +10,6 @@ import (
  */
 
 func Test_mergeTwoLists(t *testing.T) {
-
 	cases := []struct {
 		list1    *ListNode
 		list2    *ListNode
@@ -46,5 +45,4 @@ func Test_mergeTwoLists(t *testing.T) {
 			t.Errorf("case %d: result doesnt equal expected result, expected %v got %v", i+1, c.expected, result)
 		}
 	}
-
 }

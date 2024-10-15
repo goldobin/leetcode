@@ -76,5 +76,4 @@ func Test_rotate(t *testing.T) {
 			t.Errorf("expected=%v, got=%v", mExpected, m)
 		}
 	})
-
 }

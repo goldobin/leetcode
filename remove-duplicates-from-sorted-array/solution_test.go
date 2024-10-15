@@ -5,7 +5,6 @@ import (
 )
 
 func Test_removeDuplicates(t *testing.T) {
-
 	cases := []struct {
 		nums         []int
 		expectedLen  int
@@ -58,5 +57,4 @@ func Test_removeDuplicates(t *testing.T) {
 			t.Errorf("case %02d: expected len=%d, got len=%d", i, c.expectedNums, l)
 		}
 	}
-
 }
