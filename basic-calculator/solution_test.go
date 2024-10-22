@@ -1,32 +1,44 @@
 package basic_calculator
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"io"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
 func Test_Calculate(t *testing.T) {
-	t.Skip("solution not fully implemented")
+	//t.Skip("solution not fully implemented")
 	tests := []struct {
+		name string
 		in   string
 		want int
 	}{
-		{"-1", -1},
-		{"0 + 0", 0},
-		{"0 + 1", 1},
-		{"1 + 0", 1},
-		{"1 + 1", 2},
-		{"1 - 1", 0},
-		{"1 - 2", -1},
-		{"10 - 2", 8},
-		{"10 - 20", -10},
-		{"(10+11) - 20", 1},
-		{"-(10+11) - 20", -41},
-		{"5 + ((10+11) - 20)", 6},
+		{"unary negation", "-1", -1},
+		{"zero sum", "0 + 0", 0},
+		{"priority", " 2-1 + 2", 3},
+		{"sum with zero r", "0 + 1", 1},
+		{"sum with zero l", "1 + 0", 1},
+		{"one plus one", "1 + 1", 2},
+		{"one minus one", "1 - 1", 0},
+		{"negative sum", "1 - 2", -1},
+		{"case 01.1", "10 - 2", 8},
+		{"case 01.2", "10 - 20", -10},
+		{"case 01.3", "-10 - 20", -30},
+		{"group case 01.1", "(10+11) - 20", 1},
+		{"group case 01.2", "-(10+11) - 20", -41},
+		{"group case 02.1", "(1+(4+5+2)-3)+(6+8)", 23},
+		{"group case 02.2", "-(1+(4+5+2)-3)+(6+8)", 5},
+		{"group case 02.3", "3-(1+(4+5+2)-3)+(6+8)", 8},
+		{"group case 03", "5 + ((10+11) - 20)", 6},
+		{"long case 01", string(mustReadFile("long_test_case_01.txt")), -1946},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.in, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got := calculate(tt.in)
 			assert.Equal(t, tt.want, got)
 		})
@@ -95,13 +107,17 @@ func Test_parse(t *testing.T) {
 		{in: " ", wantTokens: []token{}},
 		{in: "   ", wantTokens: []token{}},
 		{in: " ( ) ", wantTokens: []token{openGroupToken, closeGroupToken}},
-		{in: "1 + 1", wantTokens: []token{numberToken(1), plusToken, numberToken(1)}},
+		{in: "1 + 1", wantTokens: []token{
+			numberToken(1),
+			plusToken,
+			numberToken(1),
+		}},
 		{in: "1 * 1", wantErr: true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
-			gotTokens, gotErr := parse(tt.in)
+			gotTokens, gotErr := parseTokens(tt.in)
 
 			if tt.wantErr {
 				assert.Error(t, gotErr)
@@ -115,4 +131,36 @@ func Test_parse(t *testing.T) {
 			assert.Equal(t, tt.wantTokens, gotTokens)
 		})
 	}
+}
+
+func mustReadFile(path string) []byte {
+
+	// Get the directory of the current test file
+	_, testFileName, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("failed to get current test file directory")
+	}
+	dir := filepath.Dir(testFileName)
+
+	// Construct the path to the target file
+	filePath := filepath.Join(dir, path)
+
+	// Open and read the file
+	f, err := os.Open(filePath)
+	if err != nil {
+		panic(fmt.Errorf("failed to open file: %w", err))
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			panic(fmt.Errorf("failed to close file: %w", err))
+		}
+	}()
+
+	// Read the file content (example)
+	content, err := io.ReadAll(f)
+	if err != nil {
+		panic(fmt.Errorf("failed to read file: %v", err))
+	}
+
+	return content
 }

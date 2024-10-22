@@ -6,16 +6,34 @@ import (
 )
 
 func calculate(s string) int {
-	return 0
+	tokens, err := parseTokens(s)
+	if err != nil {
+		panic(err)
+	}
+	tree, tail, err := parseTree(tokens, false)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse tree: %w", err))
+	}
+
+	if len(tail) > 0 {
+		panic(fmt.Sprintf("not all tokens parsed: %v", tail))
+	}
+	return tree.eval()
 }
 
 type (
-	op        func() int
 	tokenType int
 	token     struct {
 		tt tokenType
 		v  int
 	}
+	node interface {
+		fmt.Stringer
+		eval() int
+	}
+	sum      struct{ a, b node }
+	negation struct{ a node }
+	operand  struct{ v int }
 )
 
 const (
@@ -35,6 +53,33 @@ var (
 	closeGroupToken = token{tt: tokenTypeCloseGroup}
 )
 
+func (tt tokenType) String() string {
+	switch tt {
+	case tokenTypeWhitespace:
+		return "whitespace"
+	case tokenTypePlus:
+		return "plus"
+	case tokenTypeMinus:
+		return "minus"
+	case tokenTypeOpenGroup:
+		return "open_group"
+	case tokenTypeCloseGroup:
+		return "close_group"
+	case tokenTypeNumber:
+		return "number"
+	default:
+		return "unknown"
+	}
+}
+
+func (t token) String() string {
+	if t.tt == tokenTypeNumber {
+		return fmt.Sprintf("{%v, %v}", t.tt, t.v)
+	}
+
+	return t.tt.String()
+}
+
 func numberToken(n int) token {
 	return token{
 		tt: tokenTypeNumber,
@@ -42,7 +87,127 @@ func numberToken(n int) token {
 	}
 }
 
-func parse(s string) ([]token, error) {
+func (o sum) eval() int {
+	return o.a.eval() + o.b.eval()
+}
+
+func (o sum) String() string {
+	return fmt.Sprintf("(%v + %v)", o.a, o.b)
+}
+
+func (o negation) eval() int {
+	return -o.a.eval()
+}
+
+func (o negation) String() string {
+	return fmt.Sprintf("-%v", o.a)
+}
+
+func (o operand) eval() int {
+	return o.v
+}
+
+func (o operand) String() string {
+	return fmt.Sprintf("%v", o.v)
+}
+
+func parseOperation(a node, tokens []token) (node, []token, error) {
+	if len(tokens) == 0 {
+		return nil, tokens, fmt.Errorf("not enogh tokens to parse operation")
+	}
+
+	var (
+		b      node
+		rest   []token
+		err    error
+		result node
+		head   = tokens[0]
+		tail   = tokens[1:]
+	)
+
+	switch head.tt {
+	case tokenTypePlus:
+		b, rest, err = parseTree(tail, false)
+		if err != nil {
+			return nil, tokens, err
+		}
+
+		result = sum{a, b}
+
+	case tokenTypeMinus:
+		b, rest, err = parseTree(tokens, false)
+		if err != nil {
+			return nil, tokens, err
+		}
+
+		result = sum{a, b}
+
+	default:
+		return nil, tokens, fmt.Errorf("unsupported token type for operation '%v'", head.tt)
+	}
+
+	return result, rest, nil
+}
+
+func parseTree(ts []token, negate bool) (node, []token, error) {
+	if len(ts) == 0 {
+		return nil, ts, fmt.Errorf("empty token list")
+	}
+
+	var (
+		head = ts[0]
+		tail = ts[1:]
+	)
+
+	switch head.tt {
+	case tokenTypeMinus:
+		return parseTree(tail, true)
+
+	case tokenTypeNumber:
+		var (
+			a    node = operand{head.v}
+			rest      = tail
+		)
+
+		if negate {
+			a = negation{a}
+		}
+
+		if len(rest) > 0 && (rest[0].tt == tokenTypePlus || rest[0].tt == tokenTypeMinus) {
+			return parseOperation(a, rest)
+		}
+		return a, rest, nil
+
+	case tokenTypeOpenGroup:
+		a, rest, err := parseTree(tail, false)
+		if err != nil {
+			return nil, ts, err
+		}
+
+		if len(rest) == 0 {
+			return nil, ts, fmt.Errorf("empty tail")
+		}
+		if rest[0].tt != tokenTypeCloseGroup {
+			return nil, ts, fmt.Errorf("expected close group")
+		}
+
+		if negate {
+			a = negation{a}
+		}
+
+		rest = rest[1:]
+		if len(rest) > 0 && (rest[0].tt == tokenTypePlus || rest[0].tt == tokenTypeMinus) {
+			return parseOperation(a, rest)
+		}
+
+		return a, rest, nil
+
+	default:
+		return nil, ts, fmt.Errorf("unsupported token type '%v'", head.tt)
+	}
+}
+
+func parseTokens(s string) ([]token, error) {
 	result := make([]token, 0, len(s))
 
 	for {
@@ -69,10 +234,12 @@ func parseNextToken(s string) (int, token, error) {
 		return 0, token{}, fmt.Errorf("empty string")
 	}
 
-	i := 0
-	firstCh := s[0]
+	var (
+		i    = 0
+		head = s[0]
+	)
 
-	switch firstCh {
+	switch head {
 	case '+':
 		return 1, plusToken, nil
 	case '-':
@@ -91,8 +258,8 @@ func parseNextToken(s string) (int, token, error) {
 		return i, whitespaceToken, nil
 
 	default:
-		if firstCh < '0' || firstCh > '9' {
-			return 0, token{}, fmt.Errorf("unsupported char %c", firstCh)
+		if head < '0' || head > '9' {
+			return 0, token{}, fmt.Errorf("unsupported char '%c'", head)
 		}
 
 		i++
@@ -111,25 +278,4 @@ func parseNextToken(s string) (int, token, error) {
 
 		return i, numberToken(n), nil
 	}
-}
-
-func unaryNegation(o op) op {
-	return func() int {
-		return -o()
-	}
-}
-
-func num(n int) op {
-	return func() int {
-		return n
-	}
-}
-func plus(o1, o2 op) op {
-	return func() int {
-		return o1() + o2()
-	}
-}
-
-func minus(o1, o2 op) op {
-	return plus(o1, unaryNegation(o2))
 }
