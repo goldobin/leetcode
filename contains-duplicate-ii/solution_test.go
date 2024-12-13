@@ -13,9 +13,45 @@ func Test_containsDuplicate(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "case 1 leetcode",
+			name: "case 0.1",
+			nums: []int{1},
+			k:    1,
+			want: false,
+		},
+		{
+			name: "case 0.2",
+			nums: []int{},
+			k:    0,
+			want: false,
+		},
+		{
+			name: "case 0.3",
+			nums: []int{},
+			k:    1,
+			want: false,
+		},
+		{
+			name: "case 0.4",
+			nums: []int{1},
+			k:    0,
+			want: false,
+		},
+		{
+			name: "case 0.4",
+			nums: []int{1, 2},
+			k:    1,
+			want: false,
+		},
+		{
+			name: "case 1.1 leetcode",
 			nums: []int{1, 2, 3, 1},
 			k:    3,
+			want: true,
+		},
+		{
+			name: "case 1.2",
+			nums: []int{1, 2, 3, 1},
+			k:    4,
 			want: true,
 		},
 		{
