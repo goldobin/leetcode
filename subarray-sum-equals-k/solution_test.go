@@ -1,8 +1,9 @@
 package subarray_sum_equals_k
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_subarraySum(t *testing.T) {
@@ -73,6 +74,5 @@ func Test_subarraySum(t *testing.T) {
 			got := subarraySum(tt.inArr, tt.inK)
 			assert.Equal(t, tt.want, got)
 		})
-
 	}
 }

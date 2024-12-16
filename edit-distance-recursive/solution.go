@@ -23,9 +23,7 @@ const (
 )
 
 func iterate(s, t string, i, j int) int {
-	var (
-		costs = make([]int, 3)
-	)
+	costs := make([]int, 3)
 
 	if i == 0 {
 		return j * insertDeleteCost(' ')

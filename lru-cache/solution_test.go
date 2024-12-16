@@ -1,8 +1,9 @@
 package lru_cache
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type op func(*testing.T, *LRUCache)
@@ -163,5 +164,4 @@ func Test_LRUCache_Get_Put(t *testing.T) {
 			}
 		})
 	}
-
 }

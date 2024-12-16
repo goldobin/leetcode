@@ -1,9 +1,10 @@
 package trie
 
 import (
-	"github.com/stretchr/testify/assert"
 	"math/rand/v2"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTrie(t *testing.T) {
@@ -88,7 +89,6 @@ func TestTrie(t *testing.T) {
 }
 
 func TestTrie_LargeInserts(t *testing.T) {
-
 	alfabet := "abcdefghijklmnopqrstuvwxyz"
 	tr := Constructor()
 

@@ -1,12 +1,13 @@
 package edit_distance_recursive
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_stringCompare(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		name string
 		s    string
 		t    string

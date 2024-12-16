@@ -160,5 +160,4 @@ func editPathIterate(s, t string, m [][]cell, i, j int) []int {
 	}
 
 	return slices.Concat(prevOps, []int{p})
-
 }

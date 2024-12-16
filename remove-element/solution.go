@@ -1,7 +1,6 @@
 package remove_element
 
 func removeElement(nums []int, val int) int {
-
 	var (
 		slow = len(nums) - 1
 		fast = len(nums) - 1

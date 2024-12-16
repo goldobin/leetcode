@@ -22,8 +22,8 @@ func mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode {
 	}
 
 	var (
-		result         *ListNode = nil
-		resultLastNode *ListNode = nil
+		result         *ListNode
+		resultLastNode *ListNode
 	)
 
 	if head1.Val < head2.Val {

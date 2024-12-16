@@ -7,7 +7,7 @@ type node struct {
 
 func findCycle(head *node) *node {
 	seen := make(map[*node]struct{})
-	var current = head
+	current := head
 
 	for {
 		if current == nil {

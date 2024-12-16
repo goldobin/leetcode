@@ -77,10 +77,7 @@ func Test_merge(t *testing.T) {
 		caseName := fmt.Sprintf("Case %02d", i+1)
 		t.Run(caseName, func(t *testing.T) {
 			result := make([]int, len(c.nums1))
-			for i, v := range c.nums1 {
-				result[i] = v
-			}
-
+			copy(result, c.nums1)
 			merge(result, c.m, c.nums2, c.n)
 
 			if !reflect.DeepEqual(result, c.expected) {

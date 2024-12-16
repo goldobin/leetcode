@@ -3,8 +3,9 @@ package roman_to_integer
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
-import "github.com/stretchr/testify/assert"
 
 func Test_romanToInt(t *testing.T) {
 	tests := []struct {

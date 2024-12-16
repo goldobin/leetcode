@@ -271,7 +271,6 @@ func parseNextToken(s string) (int, token, error) {
 
 		number := s[:i]
 		n, err := strconv.Atoi(number)
-
 		if err != nil {
 			return 0, token{}, fmt.Errorf("invalid number %s", number)
 		}

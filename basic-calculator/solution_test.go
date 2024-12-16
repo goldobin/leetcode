@@ -2,16 +2,17 @@ package basic_calculator
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Calculate(t *testing.T) {
-	//t.Skip("solution not fully implemented")
+	// t.Skip("solution not fully implemented")
 	tests := []struct {
 		name string
 		in   string
@@ -134,7 +135,6 @@ func Test_parse(t *testing.T) {
 }
 
 func mustReadFile(path string) []byte {
-
 	// Get the directory of the current test file
 	_, testFileName, _, ok := runtime.Caller(0)
 	if !ok {

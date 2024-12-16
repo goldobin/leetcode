@@ -1,9 +1,10 @@
 package remove_element
 
 import (
-	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_removeElement(t *testing.T) {
@@ -60,7 +61,6 @@ func Test_removeElement(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			gotNums := slices.Clone(tt.nums)
 			got := removeElement(gotNums, tt.val)
 

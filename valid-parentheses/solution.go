@@ -6,7 +6,7 @@ func isValid(s string) bool {
 	st := make(stack, 0, len(s))
 
 	for i := 0; i < len(s); i++ {
-		var v2 = s[i]
+		v2 := s[i]
 		if isLeft(v2) {
 			st.push(v2)
 			continue

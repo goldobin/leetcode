@@ -99,12 +99,12 @@ func newToken(b byte) (token, error) {
 			tcFound = true
 			tc = v
 			total = 1
-			break
+
 		case v.fiveSymbol:
 			tcFound = true
 			tc = v
 			total = 5
-			break
+
 		default:
 			continue
 		}

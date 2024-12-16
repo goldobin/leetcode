@@ -1,8 +1,9 @@
 package linked_list_loop_detection
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type headAndCycle struct {
@@ -85,7 +86,6 @@ func Test_findCycle(t *testing.T) {
 			assert.True(t, tt.headAndCycle.cycle == got)
 		})
 	}
-
 }
 
 func makeLinkedList(length int, cycleLength int) headAndCycle {
