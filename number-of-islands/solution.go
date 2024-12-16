@@ -14,7 +14,7 @@ func numIslands(grid [][]byte) int {
 		t = traverser{
 			g: grid,
 			v: make(visited, d.x),
-			q: make(pointSet),
+			q: make(queue, 0, d.x*d.y),
 			d: d,
 		}
 	)
@@ -28,15 +28,15 @@ func numIslands(grid [][]byte) int {
 }
 
 type (
-	point    struct{ x, y int }
-	pointSet map[point]struct{}
-	grid     [][]byte
-	visited  [][]bool
+	point   struct{ x, y int }
+	queue   []point
+	grid    [][]byte
+	visited [][]bool
 
 	traverser struct {
 		g grid
 		v visited
-		q pointSet
+		q queue
 		d point
 		i int
 	}
@@ -54,6 +54,11 @@ func (t *traverser) start(p point) {
 		if !ok {
 			break
 		}
+
+		if t.visited(np) {
+			continue
+		}
+
 		k := t.kind(np)
 		if k == land {
 			t.i += 1
@@ -67,16 +72,18 @@ func (t *traverser) enqueue(p point) {
 	if t.visited(p) {
 		return
 	}
-	t.q[p] = struct{}{}
+	t.q = append(t.q, p)
 }
 
 func (t *traverser) dequeue() (point, bool) {
-	for e := range t.q {
-		delete(t.q, e)
-		return e, true
+	if len(t.q) == 0 {
+		return point{}, false
 	}
 
-	return point{}, false
+	v := t.q[0]
+	t.q = t.q[1:]
+
+	return v, true
 }
 
 func (t *traverser) kind(p point) byte {
@@ -88,51 +95,34 @@ func (t *traverser) visited(p point) bool {
 }
 
 func (t *traverser) markAsVisited(p point) {
-	if t.visited(p) {
-		return
-	}
-
 	t.v[p.x][p.y] = true
-	delete(t.q, p)
 }
 
-func (t *traverser) traverse(kind byte, p point) {
-	if t.visited(p) {
-		return
-	}
-
+func (t *traverser) traverse(kind byte, p point) bool {
 	t.markAsVisited(p)
-
-	var (
-		neighbors = make([]point, 0, 4)
-	)
+	neighbors := make([]point, 0, 4)
 
 	if p.x > 0 {
 		np := point{p.x - 1, p.y}
-		if !t.visited(np) {
-			neighbors = append(neighbors, np)
-		}
+		neighbors = append(neighbors, np)
 	}
 	if p.x < t.d.x-1 {
 		np := point{p.x + 1, p.y}
-		if !t.visited(np) {
-			neighbors = append(neighbors, np)
-		}
+		neighbors = append(neighbors, np)
 	}
 	if p.y > 0 {
 		np := point{p.x, p.y - 1}
-		if !t.visited(np) {
-			neighbors = append(neighbors, np)
-		}
+		neighbors = append(neighbors, np)
 	}
 	if p.y < t.d.y-1 {
 		np := point{p.x, p.y + 1}
-		if !t.visited(np) {
-			neighbors = append(neighbors, np)
-		}
+		neighbors = append(neighbors, np)
 	}
 
 	for _, np := range neighbors {
+		if t.visited(np) {
+			continue
+		}
 		if t.kind(np) != kind {
 			t.enqueue(np)
 			continue
@@ -140,4 +130,6 @@ func (t *traverser) traverse(kind byte, p point) {
 
 		t.traverse(kind, np)
 	}
+
+	return true
 }
