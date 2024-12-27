@@ -1,4 +1,4 @@
-package go_cond_broadcast
+package cond_broadcast
 
 import (
 	"fmt"
