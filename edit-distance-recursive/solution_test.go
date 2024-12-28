@@ -71,8 +71,8 @@ func Test_stringCompare(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got1 := stringCompare(tt.s, tt.t)
-			got2 := stringCompare(tt.t, tt.s)
+			got1 := minDistance(tt.s, tt.t)
+			got2 := minDistance(tt.t, tt.s)
 			assert.Equal(t, tt.want, got1)
 			assert.Equal(t, tt.want, got2)
 		})

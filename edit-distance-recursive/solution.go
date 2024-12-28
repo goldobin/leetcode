@@ -1,19 +1,7 @@
 package edit_distance_recursive
 
-func matchCost(s, t byte) int {
-	if s == t {
-		return 0
-	}
-
-	return 1
-}
-
-func insertDeleteCost(_ byte) int {
-	return 1
-}
-
-func stringCompare(s, t string) int {
-	return iterate(s, t, len(s), len(t))
+func minDistance(word1, word2 string) int {
+	return iterate(word1, word2, len(word1), len(word2))
 }
 
 const (
@@ -37,12 +25,24 @@ func iterate(s, t string, i, j int) int {
 	costs[insertCostIx] = iterate(s, t, i, j-1) + insertDeleteCost(t[j-1])
 	costs[deleteCostIx] = iterate(s, t, i-1, j) + insertDeleteCost(s[i-1])
 
-	lowestCost := costs[matchCostIx]
+	result := costs[matchCostIx]
 	for _, c := range costs {
-		if c < lowestCost {
-			lowestCost = c
+		if c < result {
+			result = c
 		}
 	}
 
-	return lowestCost
+	return result
+}
+
+func matchCost(s, t byte) int {
+	if s == t {
+		return 0
+	}
+
+	return 1
+}
+
+func insertDeleteCost(_ byte) int {
+	return 1
 }

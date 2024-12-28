@@ -1,30 +1,21 @@
 package edit_distance_dynamic
 
 import (
-	"slices"
 	"strings"
 )
 
-type result struct {
-	cost     int
-	editPath []int
-}
-
-func stringCompare(s, t string) result {
+func minDistance(word1, word2 string) int {
 	var (
-		size    = maxLen(s, t)
-		m       = makeSquareMatrix(size + 1)
-		paddedS = leftPad(s, 1)
-		paddedT = leftPad(t, 1)
+		size        = maxLen(word1, word2)
+		m           = makeSquareMatrix(size + 1)
+		paddedWord1 = padLeft(word1, 1)
+		paddedWord2 = padLeft(word2, 1)
 	)
 
 	initFirstRow(m)
 	initFirstCol(m)
 
-	return result{
-		cost:     run(paddedS, paddedT, m),
-		editPath: editPath(paddedS, paddedT, m),
-	}
+	return iterate(paddedWord1, paddedWord2, m)
 }
 
 func maxLen(s, t string) int {
@@ -77,7 +68,37 @@ func initFirstCol(m [][]cell) {
 	}
 }
 
-func leftPad(s string, size int) string {
+func iterate(word1, word2 string, m [][]cell) int {
+	costs := make([]int, 3)
+
+	// Sting is left padded, so we start from 1
+	for i := 1; i < len(word1); i++ {
+		for j := 1; j < len(word2); j++ {
+			var matchCost int
+			if word1[i] != word2[j] {
+				matchCost = differenceCost
+			}
+
+			costs[matchOp] = m[i-1][j-1].cost + matchCost
+			costs[insertOp] = m[i][j-1].cost + insertDeleteCost
+			costs[deleteOp] = m[i-1][j].cost + insertDeleteCost
+
+			m[i][j].cost = costs[matchOp]
+			m[i][j].parent = matchOp
+
+			for k := insertOp; k <= deleteOp; k++ {
+				if costs[k] < m[i][j].cost {
+					m[i][j].cost = costs[k]
+					m[i][j].parent = k
+				}
+			}
+		}
+	}
+
+	return m[len(word1)-1][len(word2)-1].cost
+}
+
+func padLeft(s string, size int) string {
 	if size <= 0 {
 		return s
 	}
@@ -97,67 +118,7 @@ const (
 	matchOp  = 0
 	insertOp = 1
 	deleteOp = 2
+
+	differenceCost   = 1
+	insertDeleteCost = 1
 )
-
-func matchCost(s, t byte) int {
-	if s == t {
-		return 0
-	}
-
-	return 1
-}
-
-func insertDeleteCost(_ byte) int {
-	return 1
-}
-
-func run(s, t string, m [][]cell) int {
-	costs := make([]int, 3)
-
-	// Sting is left padded, so we start from 1
-	for i := 1; i < len(s); i++ {
-		for j := 1; j < len(t); j++ {
-			costs[matchOp] = m[i-1][j-1].cost + matchCost(s[i], t[j])
-			costs[insertOp] = m[i][j-1].cost + insertDeleteCost(t[j])
-			costs[deleteOp] = m[i-1][j].cost + insertDeleteCost(s[i])
-
-			m[i][j].cost = costs[matchOp]
-			m[i][j].parent = matchOp
-
-			for k := insertOp; k <= deleteOp; k++ {
-				if costs[k] < m[i][j].cost {
-					m[i][j].cost = costs[k]
-					m[i][j].parent = k
-				}
-			}
-		}
-	}
-
-	return m[len(s)-1][len(t)-1].cost
-}
-
-func editPath(s, t string, m [][]cell) []int {
-	return editPathIterate(s, t, m, len(s)-1, len(t)-1)
-}
-
-func editPathIterate(s, t string, m [][]cell, i, j int) []int {
-	var (
-		p       = m[i][j].parent
-		prevOps []int
-	)
-
-	switch p {
-	case -1:
-		return []int{}
-	case matchOp:
-		prevOps = editPathIterate(s, t, m, i-1, j-1)
-	case insertOp:
-		prevOps = editPathIterate(s, t, m, i, j-1)
-	case deleteOp:
-		prevOps = editPathIterate(s, t, m, i-1, j)
-	default:
-		panic("unexpected parent value")
-	}
-
-	return slices.Concat(prevOps, []int{p})
-}

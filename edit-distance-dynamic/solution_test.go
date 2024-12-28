@@ -11,132 +11,103 @@ func Test_stringCompare(t *testing.T) {
 		name string
 		s    string
 		t    string
-		want result
+		want int
 	}{
 		{
-			name: "case 01.1 empty strings",
+			name: "case 1.1 empty strings",
 			s:    "",
 			t:    "",
-			want: result{
-				cost:     0,
-				editPath: []int{},
-			},
+			want: 0,
 		},
 		{
-			name: "case 01.2.1 one empty string",
+			name: "case 1.2.1 one empty string",
 			s:    "",
 			t:    "a",
-			want: result{
-				cost:     1,
-				editPath: []int{insertOp},
-			},
+			want: 1,
 		},
 		{
-			name: "case 01.2.2 one empty string",
+			name: "case 1.2.2 one empty string",
 			s:    "a",
 			t:    "",
-			want: result{
-				cost:     1,
-				editPath: []int{deleteOp},
-			},
+			want: 1,
 		},
 		{
-			name: "case 01.3.1 one empty string",
+			name: "case 1.3.1 one empty string",
 			s:    "",
 			t:    "ab",
-			want: result{
-				cost:     2,
-				editPath: []int{insertOp, insertOp},
-			},
+			want: 2,
 		},
 		{
-			name: "case 01.3.2 one empty string",
+			name: "case 1.3.2 one empty string",
 			s:    "ab",
 			t:    "",
-			want: result{
-				cost:     2,
-				editPath: []int{deleteOp, deleteOp},
-			},
+			want: 2,
 		},
 		{
-			name: "case 01.3.1 one empty string",
+			name: "case 1.3.1 one empty string",
 			s:    "",
 			t:    "abc",
-			want: result{
-				cost:     3,
-				editPath: []int{insertOp, insertOp, insertOp},
-			},
+			want: 3,
 		},
 		{
-			name: "case 01.3.2 one empty string",
+			name: "case 1.3.2 one empty string",
 			s:    "abc",
 			t:    "",
-			want: result{
-				cost:     3,
-				editPath: []int{deleteOp, deleteOp, deleteOp},
-			},
+			want: 3,
 		},
 		{
-			name: "case 02.1 equal non empty strings",
+			name: "case 2.1 equal non empty strings",
 			s:    "a",
 			t:    "a",
-			want: result{
-				cost:     0,
-				editPath: []int{matchOp},
-			},
+			want: 0,
 		},
 		{
-			name: "case 02.2 non equal non empty strings",
+			name: "case 2.2 non equal non empty strings",
 			s:    "a",
 			t:    "b",
-			want: result{
-				cost:     1,
-				editPath: []int{matchOp},
-			},
+			want: 1,
 		},
 		{
-			name: "case 02.3 non equal non empty strings",
+			name: "case 2.3 non equal non empty strings",
 			s:    "a",
 			t:    "ab",
-			want: result{
-				cost:     1,
-				editPath: []int{matchOp, insertOp},
-			},
+			want: 1,
 		},
 		{
-			name: "case 02.4 non equal non empty strings",
+			name: "case 2.4 non equal non empty strings",
 			s:    "abc",
 			t:    "ac",
-			want: result{
-				cost:     1,
-				editPath: []int{matchOp, deleteOp, matchOp},
-			},
+			want: 1,
 		},
 		{
-			name: "case 02.5 non equal non empty strings",
+			name: "case 2.5 non equal non empty strings",
 			s:    "abc",
 			t:    "ad",
-			want: result{
-				cost:     2,
-				editPath: []int{matchOp, deleteOp, matchOp},
-			},
+			want: 2,
 		},
 		{
-			name: "case 02.6 non equal non empty strings",
+			name: "case 2.6 non equal non empty strings",
 			s:    "abc",
 			t:    "dab",
-			want: result{
-				cost: 2,
-				editPath: []int{
-					insertOp, matchOp, matchOp, deleteOp,
-				},
-			},
+			want: 2,
+		},
+		{
+			name: "case 3.1 leetcode",
+			s:    "horse",
+			t:    "ros",
+			want: 3,
+		},
+		{
+			name: "case 3.2 leetcode",
+			s:    "intention",
+			t:    "execution",
+			want: 5,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := stringCompare(tt.s, tt.t)
+			got := minDistance(tt.s, tt.t)
 			assert.Equal(t, tt.want, got)
 		})
 	}
