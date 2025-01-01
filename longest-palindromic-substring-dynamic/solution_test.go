@@ -72,6 +72,11 @@ func Test_longestPalindrome(t *testing.T) {
 			s:    "kbbbbf",
 			want: "bbbb",
 		},
+		{
+			name: "case 19",
+			s:    "abb",
+			want: "bb",
+		},
 	}
 
 	for _, tt := range tests {
