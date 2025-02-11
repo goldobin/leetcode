@@ -1,6 +1,7 @@
 package text_justification
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -190,7 +191,7 @@ func Test_joinAndRightPadWhenWordsDoNotFit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Panics(t, func() {
-				joinAndRightPad(tt.words, tt.maxWidth)
+				joinAndRightPad(&strings.Builder{}, tt.words, tt.maxWidth)
 			})
 		})
 	}
@@ -260,8 +261,13 @@ func Test_joinAndRightPad(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		sb := strings.Builder{}
+		sb.Grow(tt.maxWidth)
 		t.Run(tt.name, func(t *testing.T) {
-			got := joinAndRightPad(tt.words, tt.maxWidth)
+			sb.Reset()
+			joinAndRightPad(&sb, tt.words, tt.maxWidth)
+			got := sb.String()
+
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -300,7 +306,7 @@ func Test_justifyLineWhenWordsDoNotFit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Panics(t, func() {
-				joinAndRightPad(tt.words, tt.maxWidth)
+				joinAndRightPad(&strings.Builder{}, tt.words, tt.maxWidth)
 			})
 		})
 	}
@@ -430,8 +436,12 @@ func Test_justifyLine(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		sb := strings.Builder{}
+		sb.Grow(tt.maxWidth)
 		t.Run(tt.name, func(t *testing.T) {
-			got := justifyLine(tt.words, tt.maxWidth)
+			sb.Reset()
+			justifyLine(&sb, tt.words, tt.maxWidth)
+			got := sb.String()
 			assert.Equal(t, tt.want, got)
 		})
 	}
