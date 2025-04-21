@@ -1,110 +1,95 @@
 package most_profitable_path_in_a_tree
 
 import (
-	"maps"
 	"math"
-	"slices"
 )
+
+type node struct {
+	parent       int
+	children     map[int]struct{}
+	bobVisited   bool
+	bobVisitStep int
+}
 
 func mostProfitablePath(edges [][]int, bobStartNode int, rewards []int) int {
 	var (
 		nodeCount = len(rewards)
-		children  = make([][]int, nodeCount)
-		parents   = make([]int, nodeCount)
-		bobVisits = make([]int, nodeCount)
+		tree      = make([]node, nodeCount)
 	)
 
-	buildChildren(children, edges)
-	buildParents(parents, children)
-	buildBobVisits(bobVisits, parents, bobStartNode)
+	buildTree(tree, edges)
+	markBobPath(tree, bobStartNode)
 
 	s := solver{
 		rewards,
-		children,
-		bobVisits,
+		tree,
 	}
 
-	return s.solve(0)
+	result := s.solve(0)
+	return result
 }
 
-func buildChildren(result [][]int, edges [][]int) {
-	var (
-		nodeCount     = len(result)
-		adjacentNodes = make([]map[int]struct{}, nodeCount)
-		visits        = make([]bool, nodeCount)
-		queue         = make([]int, 0, len(edges))
-	)
-
+func buildTree(resultTree []node, edges [][]int) {
 	for _, edge := range edges {
 		var (
 			from = edge[0]
 			to   = edge[1]
 		)
 
-		if adjacentNodes[from] == nil {
-			adjacentNodes[from] = make(map[int]struct{}, nodeCount)
+		if resultTree[from].children == nil {
+			resultTree[from].children = make(map[int]struct{})
 		}
-		adjacentNodes[from][to] = struct{}{}
+		resultTree[from].children[to] = struct{}{}
 
-		if adjacentNodes[to] == nil {
-			adjacentNodes[to] = make(map[int]struct{}, nodeCount)
+		if resultTree[to].children == nil {
+			resultTree[to].children = make(map[int]struct{})
 		}
-		adjacentNodes[to][from] = struct{}{}
+		resultTree[to].children[from] = struct{}{}
 	}
 
-	queue = append(queue, 0)
+	var (
+		visits = make([]bool, len(resultTree))
+		queue  = make([]int, 0)
+	)
 	visits[0] = true
+	resultTree[0].parent = -1
+	queue = append(queue, 0)
 
 	for len(queue) > 0 {
-		currentParent := queue[0]
+		p := queue[0]
 		queue = queue[1:]
 
-		adjNodes := adjacentNodes[currentParent]
-		for v := range adjNodes {
-			if !visits[v] {
+		children := resultTree[p].children
+		for c := range children {
+			if visits[c] {
+				delete(children, c)
 				continue
 			}
-			delete(adjNodes, v)
+			visits[c] = true
+			resultTree[c].parent = p
+			queue = append(queue, c)
 		}
 
-		var childNodes []int = slices.Collect(maps.Keys(adjNodes))
-		result[currentParent] = childNodes
-		for _, n := range childNodes {
-			visits[n] = true
-		}
-		queue = append(queue, childNodes...)
-	}
-}
-
-func buildParents(result []int, children [][]int) {
-	for i := 0; i < len(result); i++ {
-		result[i] = -1
-	}
-
-	for i := 0; i < len(children); i++ {
-		for _, v := range children[i] {
-			result[v] = i
+		if len(children) == 0 {
+			resultTree[p].children = nil
 		}
 	}
 }
 
-func buildBobVisits(visits []int, parents []int, startNode int) {
+func markBobPath(tree []node, startNode int) {
 	var (
 		step = 0
 		next = startNode
 	)
 
-	for i := 0; i < len(visits); i++ {
-		visits[i] = -1
-	}
-
 	for {
-		visits[next] = step
+		tree[next].bobVisited = true
+		tree[next].bobVisitStep = step
 		step += 1
 		if next == 0 {
 			break
 		}
-		next = parents[next]
+		next = tree[next].parent
 		if next < 0 {
 			break
 		}
@@ -112,40 +97,38 @@ func buildBobVisits(visits []int, parents []int, startNode int) {
 }
 
 type solver struct {
-	rewards   []int
-	children  [][]int
-	bobVisits []int
+	rewards []int
+	tree    []node
 }
 
 func (s solver) solve(aliceStartNode int) int {
 	return s.iterate(aliceStartNode, 0)
 }
 
-func (s solver) iterate(node int, step int) int {
+func (s solver) iterate(i int, step int) int {
 	var (
-		bobVisitStep = s.bobVisits[node]
-		children     = s.children[node]
-		reward       = s.rewards[node]
+		n            = s.tree[i]
+		reward       = s.rewards[i]
 		actualReward int
 	)
 
-	if bobVisitStep == -1 {
+	if !n.bobVisited {
 		actualReward = reward
-	} else if step == bobVisitStep {
+	} else if step == n.bobVisitStep {
 		actualReward = reward / 2
-	} else if step < bobVisitStep {
+	} else if step < n.bobVisitStep {
 		actualReward = reward
 	} else {
 		actualReward = 0
 	}
 
-	if len(children) == 0 {
+	if len(n.children) == 0 {
 		return actualReward
 	}
 
 	maxSubReward := math.MinInt32
-	for _, childNode := range s.children[node] {
-		subReward := s.iterate(childNode, step+1)
+	for c := range n.children {
+		subReward := s.iterate(c, step+1)
 		if subReward > maxSubReward {
 			maxSubReward = subReward
 		}

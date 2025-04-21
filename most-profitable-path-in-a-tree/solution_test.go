@@ -1,6 +1,13 @@
 package most_profitable_path_in_a_tree
 
 import (
+	"fmt"
+	"io"
+	"os"
+	"path"
+	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,6 +50,13 @@ func Test_mostProfitablePath(t *testing.T) {
 			want:         7368,
 		},
 		{
+			name:         "case 1.5 leetcode",
+			edges:        must(parseEdges(must(readFile("data/case_1_5_edges.txt")))),
+			bobStartNode: 3945,
+			rewards:      must(parseRewards(must(readFile("data/case_1_5_rewards.txt")))),
+			want:         98070,
+		},
+		{
 			name:         "case 2.1",
 			edges:        [][]int{{0, 1}, {0, 2}, {1, 3}, {1, 4}, {2, 5}, {2, 6}},
 			bobStartNode: 3,
@@ -63,4 +77,96 @@ func Test_mostProfitablePath(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func Benchmark_mostProfitablePath(b *testing.B) {
+	edges := must(parseEdges(must(readFile("data/case_1_5_edges.txt"))))
+	bobStartNode := 3945
+	rewards := must(parseRewards(must(readFile("data/case_1_5_rewards.txt"))))
+	for b.Loop() {
+		got := mostProfitablePath(edges, bobStartNode, rewards)
+		assert.Equal(b, 98070, got)
+	}
+}
+
+func readFile(fileName string) ([]byte, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get working directory:%w", err)
+	}
+
+	p := path.Join(dir, fileName)
+	f, err := os.Open(p)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file for read %s: %w", p, err)
+	}
+
+	bs, err := io.ReadAll(f)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file %s: %w", p, err)
+	}
+
+	return bs, nil
+}
+
+func parseEdges(bs []byte) ([][]int, error) {
+	var (
+		re     = regexp.MustCompile(`\[(-?\d+),(-?\d+)]`)
+		result = make([][]int, 0)
+		parts  = re.FindAll(bs, -1)
+	)
+
+	for _, part := range parts {
+		subparts := re.FindSubmatch(part)
+		if len(subparts) != 3 {
+			return nil, fmt.Errorf("failed to parse out %v: expected 2 numbers was %v", string(part), len(subparts))
+		}
+
+		var (
+			pair = make([]int, 2)
+			err  error
+		)
+		for i, subpart := range subparts[1:] {
+			pair[i], err = strconv.Atoi(string(subpart))
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse out %v: %w", string(subpart), err)
+			}
+		}
+		result = append(result, pair)
+	}
+
+	return result, nil
+}
+
+func parseRewards(bs []byte) ([]int, error) {
+	if len(bs) < 2 {
+		return nil, fmt.Errorf("not enough data")
+	}
+
+	if bs[0] != '[' || bs[len(bs)-1] != ']' {
+		return nil, fmt.Errorf("invalid format: rewards expected to be an array of ints")
+	}
+
+	bs = bs[1 : len(bs)-1]
+	var (
+		ss = strings.Split(string(bs), ",")
+		ns = make([]int, len(ss))
+	)
+
+	for i, s := range ss {
+		var err error
+		ns[i], err = strconv.Atoi(strings.TrimSpace(s))
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert string to int at position %v: %w", i, err)
+		}
+	}
+
+	return ns, nil
+}
+
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
