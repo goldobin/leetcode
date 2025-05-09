@@ -1,16 +1,69 @@
 package find_median_from_data_stream
 
-type MedianFinder struct{}
+type MedianFinder struct {
+	left  heap
+	right heap
+}
 
 func Constructor() MedianFinder {
-	return MedianFinder{}
+	return MedianFinder{
+		left:  newMaxHeap(),
+		right: newMinHeap(),
+	}
 }
 
 func (mf *MedianFinder) AddNum(num int) {
+	l, lOK := mf.left.peek()
+	r, rOK := mf.right.peek()
+
+	if !lOK {
+		mf.left.push(num)
+		return
+	}
+
+	if num < l {
+		if mf.left.size()-1 == mf.right.size() {
+			_, _ = mf.left.pull()
+			mf.right.push(l)
+		}
+
+		mf.left.push(num)
+		return
+	}
+
+	if !rOK {
+		mf.right.push(num)
+		return
+	}
+
+	if r < num {
+		if mf.left.size() == mf.right.size() {
+			_, _ = mf.right.pull()
+			mf.left.push(r)
+		}
+		mf.right.push(num)
+		return
+	}
+
+	if mf.left.size() == mf.right.size() {
+		mf.left.push(num)
+	} else {
+		mf.right.push(num)
+	}
 }
 
 func (mf *MedianFinder) FindMedian() float64 {
-	return 0
+	if mf.left.size() == 0 && mf.right.size() == 0 {
+		return 0.0
+	}
+
+	l, _ := mf.left.peek()
+	if mf.left.size() != mf.right.size() {
+		return float64(l)
+	} else {
+		r, _ := mf.right.peek()
+		return float64(l+r) / 2.0
+	}
 }
 
 type (
@@ -63,7 +116,7 @@ func (h *heap) push(v int) {
 			break
 		}
 
-		swap(h.es, i, pi)
+		h.es[i], h.es[pi] = h.es[pi], h.es[i]
 		i = pi
 	}
 }
@@ -88,10 +141,10 @@ func (h *heap) pull() (int, bool) {
 		}
 
 		if h.compare(h.es[li], h.es[ri]) > 0 {
-			swap(h.es, i, li)
+			h.es[i], h.es[li] = h.es[li], h.es[i]
 			i = li
 		} else {
-			swap(h.es, i, ri)
+			h.es[i], h.es[ri] = h.es[ri], h.es[i]
 			i = ri
 		}
 	}
@@ -106,8 +159,6 @@ func (h *heap) peek() (int, bool) {
 	return (h.es)[0], true
 }
 
-func swap(nums []int, i, j int) {
-	tmp := nums[i]
-	nums[i] = nums[j]
-	nums[j] = tmp
+func (h *heap) size() int {
+	return len(h.es)
 }

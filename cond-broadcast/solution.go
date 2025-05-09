@@ -1,7 +1,6 @@
 package cond_broadcast
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 )
@@ -38,10 +37,8 @@ func solution(n int) int {
 	clicked.Add(n)
 
 	for i := 0; i < n; i++ {
-		actionNo := i + 1
 		b.Subscribe(func() {
 			defer clicked.Done()
-			print(fmt.Sprintf("Action %d\n", actionNo))
 			counter.Add(1)
 		})
 	}
