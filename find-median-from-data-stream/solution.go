@@ -1,164 +1,123 @@
 package find_median_from_data_stream
 
+import (
+	"container/heap"
+)
+
 type MedianFinder struct {
-	left  heap
-	right heap
+	left  maxHeap
+	right minHeap
 }
 
 func Constructor() MedianFinder {
+	lh := maxHeap{}
+	heap.Init(&lh)
+	rh := minHeap{}
+	heap.Init(&rh)
 	return MedianFinder{
-		left:  newMaxHeap(),
-		right: newMinHeap(),
+		left:  lh,
+		right: rh,
 	}
 }
 
 func (mf *MedianFinder) AddNum(num int) {
-	l, lOK := mf.left.peek()
-	r, rOK := mf.right.peek()
-
-	if !lOK {
-		mf.left.push(num)
+	if mf.left.Len() == 0 {
+		heap.Push(&mf.left, num)
 		return
 	}
 
+	l := mf.left.Peek()
 	if num < l {
-		if mf.left.size()-1 == mf.right.size() {
-			_, _ = mf.left.pull()
-			mf.right.push(l)
+		if mf.left.Len()-1 == mf.right.Len() {
+			heap.Pop(&mf.left)
+			heap.Push(&mf.right, l)
 		}
 
-		mf.left.push(num)
+		heap.Push(&mf.left, num)
 		return
 	}
 
-	if !rOK {
-		mf.right.push(num)
+	if len(mf.right) == 0 {
+		heap.Push(&mf.right, num)
 		return
 	}
 
+	r := mf.right.Peek()
 	if r < num {
-		if mf.left.size() == mf.right.size() {
-			_, _ = mf.right.pull()
-			mf.left.push(r)
+		if mf.left.Len() == mf.right.Len() {
+			heap.Pop(&mf.right)
+			heap.Push(&mf.left, r)
 		}
-		mf.right.push(num)
+		heap.Push(&mf.right, num)
 		return
 	}
 
-	if mf.left.size() == mf.right.size() {
-		mf.left.push(num)
+	if len(mf.left) == len(mf.right) {
+		heap.Push(&mf.left, num)
 	} else {
-		mf.right.push(num)
+		heap.Push(&mf.right, num)
 	}
 }
 
 func (mf *MedianFinder) FindMedian() float64 {
-	if mf.left.size() == 0 && mf.right.size() == 0 {
+	if mf.left.Len() == 0 && mf.right.Len() == 0 {
 		return 0.0
 	}
 
-	l, _ := mf.left.peek()
-	if mf.left.size() != mf.right.size() {
+	l := mf.left.Peek()
+	if mf.left.Len() != mf.right.Len() {
 		return float64(l)
 	} else {
-		r, _ := mf.right.peek()
+		r := mf.right.Peek()
 		return float64(l+r) / 2.0
 	}
 }
 
 type (
-	heap struct {
-		es      []int
-		compare compareFn
-	}
-	compareFn func(int, int) int
+	minHeap []int
+	maxHeap []int
 )
 
-func greater(a, b int) int {
-	if a == b {
-		return 0
-	}
-	if a < b {
-		return -1
-	}
-	return 1
+func (h minHeap) Len() int           { return len(h) }
+func (h minHeap) Less(i, j int) bool { return h[i] < h[j] }
+func (h minHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *minHeap) Push(x any) {
+	// Push and Pop use pointer receivers because they modify the slice's length,
+	// not just its contents.
+	*h = append(*h, x.(int))
 }
 
-func less(a, b int) int {
-	if a == b {
-		return 0
-	}
-	if a < b {
-		return 1
-	}
-	return -1
+func (h *minHeap) Pop() any {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
-func newMinHeap() heap {
-	return heap{
-		compare: less,
-	}
+func (h *minHeap) Peek() int {
+	return (*h)[0]
 }
 
-func newMaxHeap() heap {
-	return heap{
-		compare: greater,
-	}
+func (h maxHeap) Len() int           { return len(h) }
+func (h maxHeap) Less(i, j int) bool { return h[i] > h[j] }
+func (h maxHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *maxHeap) Push(x any) {
+	// Push and Pop use pointer receivers because they modify the slice's length,
+	// not just its contents.
+	*h = append(*h, x.(int))
 }
 
-func (h *heap) push(v int) {
-	h.es = append(h.es, v)
-	i := len(h.es) - 1
-
-	for i > 0 {
-		pi := i / 2
-		if h.compare(h.es[i], h.es[pi]) < 0 {
-			break
-		}
-
-		h.es[i], h.es[pi] = h.es[pi], h.es[i]
-		i = pi
-	}
+func (h *maxHeap) Pop() any {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
-func (h *heap) pull() (int, bool) {
-	if len(h.es) == 0 {
-		return 0, false
-	}
-
-	r := h.es[0]
-	h.es[0] = h.es[len(h.es)-1]
-	h.es = h.es[:len(h.es)-1]
-
-	i := 0
-
-	for i < len(h.es)/2 {
-		li := i * 2
-		ri := li + 1
-
-		if !(h.compare(h.es[i], h.es[li]) < 0 || h.compare(h.es[i], h.es[ri]) < 0) {
-			break
-		}
-
-		if h.compare(h.es[li], h.es[ri]) > 0 {
-			h.es[i], h.es[li] = h.es[li], h.es[i]
-			i = li
-		} else {
-			h.es[i], h.es[ri] = h.es[ri], h.es[i]
-			i = ri
-		}
-	}
-
-	return r, true
-}
-
-func (h *heap) peek() (int, bool) {
-	if len(h.es) == 0 {
-		return 0, false
-	}
-	return (h.es)[0], true
-}
-
-func (h *heap) size() int {
-	return len(h.es)
+func (h *maxHeap) Peek() int {
+	return (*h)[0]
 }
