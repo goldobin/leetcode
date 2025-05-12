@@ -11,7 +11,11 @@ type MaxStack struct {
 }
 
 func Constructor() MaxStack {
-	return MaxStack{}
+	return MaxStack{
+		heap: maxHeap{
+			indices: make(map[heapEntry]int),
+		},
+	}
 }
 
 func (s *MaxStack) Push(x int) {
@@ -98,7 +102,11 @@ type (
 		value int
 		index int
 	}
-	maxHeap []heapEntry
+
+	maxHeap struct {
+		es      []heapEntry
+		indices map[heapEntry]int
+	}
 )
 
 func (e heapEntry) Less(than heapEntry) bool {
@@ -110,24 +118,35 @@ func (e heapEntry) Less(than heapEntry) bool {
 }
 func (e heapEntry) Equals(than heapEntry) bool { return e.value == than.value && e.index == than.index }
 
-func (h maxHeap) Len() int           { return len(h) }
-func (h maxHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-func (h maxHeap) Less(i, j int) bool { return !h[i].Less(h[j]) }
-func (h *maxHeap) Push(x any)        { *h = append(*h, x.(heapEntry)) }
+func (h maxHeap) Len() int { return len(h.es) }
+func (h maxHeap) Swap(i, j int) {
+	e1 := h.es[i]
+	e2 := h.es[j]
+	h.es[i], h.es[j] = h.es[j], h.es[i]
+	h.indices[e1] = j
+	h.indices[e2] = i
+}
+func (h maxHeap) Less(i, j int) bool { return !h.es[i].Less(h.es[j]) }
+func (h *maxHeap) Push(x any) {
+	e := x.(heapEntry)
+	(*h).es = append((*h).es, e)
+	h.indices[e] = len((*h).es) - 1
+}
+
 func (h *maxHeap) Pop() any {
-	old := *h
+	old := (*h).es
 	n := len(old)
 	x := old[n-1]
-	*h = old[0 : n-1]
+	(*h).es = old[0 : n-1]
+	delete((*h).indices, x)
 	return x
 }
-func (h *maxHeap) peek() heapEntry { return (*h)[0] }
+func (h *maxHeap) peek() heapEntry { return (*h).es[0] }
 func (h maxHeap) indexOf(e heapEntry) int {
-	for i, v := range h {
-		if e.Equals(v) {
-			return i
-		}
+	i, ok := h.indices[e]
+	if !ok {
+		return -1
 	}
 
-	return -1
+	return i
 }
