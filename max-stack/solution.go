@@ -93,6 +93,11 @@ func (s *MaxStack) compact() {
 	}
 }
 
+func (s *MaxStack) Len() int {
+	s.compact()
+	return s.heap.Len()
+}
+
 type (
 	stackEntry struct {
 		value      int
