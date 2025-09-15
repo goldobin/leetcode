@@ -37,7 +37,7 @@ func Test_cloneGraph(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := cloneGraph(tt.node)
-			if !(assert.NotNil(t, got) && assert.False(t, tt.node == got)) {
+			if !assert.NotNil(t, got) || !assert.False(t, tt.node == got) {
 				return
 			}
 			assert.Equal(t, tt.node, got)

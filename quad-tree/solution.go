@@ -21,7 +21,7 @@ func node(grid [][]int, row, col, length int) *Node {
 			v10 = grid[r1][col] == 1
 			v11 = grid[r1][c1] == 1
 		)
-		if isZero := !(v00 || v01 || v10 || v11); isZero {
+		if isZero := !v00 && !v01 && !v10 && !v11; isZero {
 			return &Node{
 				Val: false, IsLeaf: true,
 			}
@@ -59,7 +59,7 @@ func node(grid [][]int, row, col, length int) *Node {
 			v10 = n10.Val
 			v11 = n11.Val
 		)
-		if isZero := !(v00 || v01 || v10 || v11); isZero {
+		if isZero := !v00 && !v01 && !v10 && !v11; isZero {
 			return &Node{
 				Val: false, IsLeaf: true,
 			}

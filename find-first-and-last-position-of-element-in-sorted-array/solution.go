@@ -25,7 +25,7 @@ func binarySearch(nums []int, target int) (l, r, pivot int) {
 		pivot = l + (r-l)/2
 		v := nums[pivot]
 		if v == target {
-			return
+			return l, r, pivot
 		}
 
 		if v < target {
@@ -36,7 +36,7 @@ func binarySearch(nums []int, target int) (l, r, pivot int) {
 	}
 
 	pivot = -1
-	return
+	return l, r, pivot
 }
 
 func binarySearchL(nums []int, l, r, target int) int {
