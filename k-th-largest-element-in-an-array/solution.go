@@ -60,7 +60,7 @@ func (h *heap) pull() (int, bool) {
 		li := i * 2
 		ri := li + 1
 
-		if !(h.es[i] < h.es[li] || h.es[i] < h.es[ri]) {
+		if h.es[i] >= h.es[li] && h.es[i] >= h.es[ri] {
 			break
 		}
 

@@ -5,11 +5,12 @@ func climbStairs(n int) int {
 	memory[0] = 0
 
 	for i := 1; i <= n; i++ {
-		if i == 1 {
+		switch i {
+		case 1:
 			memory[i] = 1
-		} else if i == 2 {
+		case 2:
 			memory[i] = 2
-		} else {
+		default:
 			memory[i] = memory[i-1] + memory[i-2]
 		}
 	}

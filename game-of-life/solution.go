@@ -72,15 +72,16 @@ func step(dst, src [][]int, d, p point) {
 		aliveCount++
 	}
 
-	if state == alive {
+	switch state {
+	case alive:
 		if aliveCount < 2 || aliveCount > 3 {
 			state = dead
 		}
-	} else if state == dead {
+	case dead:
 		if aliveCount == 3 {
 			state = alive
 		}
-	} else {
+	default:
 		panic(fmt.Sprintf("invalid state %d", state))
 	}
 
